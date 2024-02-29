@@ -53,5 +53,17 @@ git push -u origin master
 # meaning of master is the branch of the local repository and the remote repository 
 # is pushed to the master branch of the remote repository
 #
+# to see namer of brunches 
+# git branch --list
+# pull master branch from the remote repository
+# git pull origin master
+git config --global user.name "farzana-tarannum"
+git config --global user.email "	"
+git config --global editor "nvim"
+git config --global 
+git pull origin mai
+git branch --set-upstream-to=origin/master abc
+git pull origin master:abc
+
 
 
