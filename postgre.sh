@@ -16,43 +16,69 @@ else
 	echo "volume dir $d found"
 fi
 
+## shell functions 
+start() {
+	echo "Starting up postgre server ..."
+	docker inspect db1 &> /dev/null &&  echo "containter down" && docker start db1 || \
+	docker run --detach --name db1 --publish 5432:5432 --volume \
+		/home/rusty/db1:/var/lib/postgresql/data \
+		--env POSTGRES_PASSWORD=0n3p4ssw0rd \
+		--env POSTGRES_USER=eagle --env POSTGRES_DB=hawk \
+		postgres:latest
+}
 
-if [ "$(docker ps -q -f name=db1)" ]; then
-	echo "containter up"
-docker exec -it db1 psql -U eagle -d hawk -c "SELECT 'Hello, world!';"
-docker exec --interactive --tty db1 psql --username eagle --dbname hawk \
-	-c "SELECT version();"
-docker exec -it db1 psql -U eagle -d hawk -c "SELECT datname FROM pg_database;"
-docker exec -it db1 psql -U eagle -d hawk -c "SELECT * FROM pg_user;"
-docker exec -it db1 psql -U eagle -d hawk -c "SELECT tablename FROM pg_tables;"
-docker exec -it db1 psql -U eagle -d hawk -c "SELECT rolname FROM pg_roles;"
+stop() {
+	echo "stopping container"
+	docker stop db1
+}	
 
-	if [ "$1" == "down" ]; then
-		echo "stopping container"
-		docker stop db1
-	fi
-	exit 0
-else 
-	echo "container down"
-fi 
+clean() {
 
-if [ "$(docker ps --all --quiet --filter name=db1)" ] && [ "$1" == "clean" ]; then
+	if [ "$(docker ps --all --quiet --filter name=db1)" ]; then
 	echo "removing container"
 	docker rm db1
-fi
+	fi
+}
 
+health() {
+	echo "checking container health"
+	docker inspect db1 &> /dev/null &&  echo "containter up" || echo "containter down"
+}
 
-echo "Starting up postgre server ..."
+dbhealth() {
+	if [ "$(docker ps -q -f name=db1)" ]; then
+	echo "containter up"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT 'Hello, world!';"
+	docker exec --interactive --tty db1 psql --username eagle --dbname hawk \
+		-c "SELECT version();"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT datname FROM pg_database;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT * FROM pg_user;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT tablename FROM pg_tables;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT rolname FROM pg_roles;"
+	fi 
+}
+
+case $1 in 
+	"down")
+		stop
+		exit 0
+		;;
 	
-docker inspect db1 &> /dev/null &&  echo "containter down" && docker start db1 || \
-docker run --detach --name db1 --publish 5432:5432 --volume \
-	/home/rusty/db1:/var/lib/postgresql/data \
-	--env POSTGRES_PASSWORD=0n3p4ssw0rd \
-	--env POSTGRES_USER=eagle --env POSTGRES_DB=hawk \
-	postgres:latest
-
-# &> directs both standard output and standard error to /dev/null
-# && is used to run the next command if the previous command is successful
-# || is used to run the next command if the previous command is not successful
-#
-#
+	"clean")
+		clean
+		exit 0
+		;;
+	"db")
+		dbhealth
+		exit 0
+		;;
+	"health")
+		health
+		docker ps -a	
+		exit 0
+		;;
+	*)
+		start
+		exit 0
+		;;
+esac
