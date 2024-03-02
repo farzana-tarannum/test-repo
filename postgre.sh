@@ -27,6 +27,13 @@ start() {
 		postgres:latest
 }
 
+post_forwards() {
+	docker port db1
+	docker inspect db1 | grep IPAddress
+	docker ps | awk '{print $1}' | xargs docker inspect --format '{{ .NetworkSettings.IPAddress }}'
+	docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(docker ps -q)
+}
+
 stop() {
 	echo "stopping container"
 	docker stop db1
@@ -51,10 +58,10 @@ dbhealth() {
 	docker exec -it db1 psql -U eagle -d hawk -c "SELECT 'Hello, world!';"
 	docker exec --interactive --tty db1 psql --username eagle --dbname hawk \
 		-c "SELECT version();"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT datname FROM pg_database;"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT * FROM pg_user;"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT tablename FROM pg_tables;"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT rolname FROM pg_roles;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT datname FROM pg_database limit 5;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT usename FROM pg_user limit 5;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT tablename FROM pg_tables limit 5;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT rolname FROM pg_roles limit 5;"
 	fi 
 }
 
