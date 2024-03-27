@@ -27,6 +27,11 @@ start() {
 		postgres:latest
 }
 
+runsqlfile() {
+	docker exec --interactive --tty db1 psql --host 192.168.2.146 --port 5432 --username eagle --dbname hawk  < $2
+#	docker exec --interactive --tty db1 psql --username eagle --dbname hawk  < $2
+}
+
 post_forwards() {
 	docker port db1
 	docker inspect db1 | grep IPAddress
@@ -35,6 +40,8 @@ post_forwards() {
 }
 
 stop() {
+	# docker exec to container id 32d3b3e2b2e3
+	#
 	echo "stopping container"
 	docker stop db1
 }	
@@ -82,6 +89,10 @@ case $1 in
 	"health")
 		health
 		docker ps -a	
+		exit 0
+		;;
+	"sql")
+		runsqlfile
 		exit 0
 		;;
 	*)

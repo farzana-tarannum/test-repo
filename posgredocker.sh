@@ -9,6 +9,9 @@ docker container run --name postgres --env POSTGRES_PASSWORD=postgres --remove-o
 
 docker container ps
 docker container logs postgres
+# docker run --name go --rm -it -v /home/rusty/go:/go golang:alpine bash :/go
+# on the host machin
+# psql -h localhost -U postgres -d postgres
 docker container exec -it postgres psql -U postgres -d postgres -c "SELECT versoin();"
 docker container exec -it postgres psql -U postgres -C "CREATE DATABASE mydb;"
 docker container exec -it postgres psql -U posgres -C "CREATE USER myuser WITH PASSWORD 'mypass';"

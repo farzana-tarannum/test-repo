@@ -60,10 +60,19 @@ git push -u origin master
 git config --global user.name "farzana-tarannum"
 git config --global user.email "	"
 git config --global editor "nvim"
-git config --global 
-git pull origin mai
+git config --global core.editor "nvim"
+# git config --global --list
+git pull origin 
+git pull origin master
+git pull origin main
+git pull origin master:main
 git branch --set-upstream-to=origin/master abc
+git branch --set-upstreamt-to=origin/master abc
 git pull origin master:abc
+git remote add origin git://github.com/farzana-tarannum/test-repo.git
+git reset --hard origin/master
+# reset the last 3 commits
+git reset --hard HEAD~3 
 
 
 
