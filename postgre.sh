@@ -27,7 +27,21 @@ start() {
 		postgres:latest
 }
 
+runsqlfile() {
+	docker exec --interactive --tty db1 psql --host 192.168.2.146 --port 5432 --username eagle --dbname hawk  < $2
+#	docker exec --interactive --tty db1 psql --username eagle --dbname hawk  < $2
+}
+
+post_forwards() {
+	docker port db1
+	docker inspect db1 | grep IPAddress
+	docker ps | awk '{print $1}' | xargs docker inspect --format '{{ .NetworkSettings.IPAddress }}'
+	docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(docker ps -q)
+}
+
 stop() {
+	# docker exec to container id 32d3b3e2b2e3
+	#
 	echo "stopping container"
 	docker stop db1
 }	
@@ -51,10 +65,10 @@ dbhealth() {
 	docker exec -it db1 psql -U eagle -d hawk -c "SELECT 'Hello, world!';"
 	docker exec --interactive --tty db1 psql --username eagle --dbname hawk \
 		-c "SELECT version();"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT datname FROM pg_database;"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT * FROM pg_user;"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT tablename FROM pg_tables;"
-	docker exec -it db1 psql -U eagle -d hawk -c "SELECT rolname FROM pg_roles;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT datname FROM pg_database limit 5;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT usename FROM pg_user limit 5;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT tablename FROM pg_tables limit 5;"
+	docker exec -it db1 psql -U eagle -d hawk -c "SELECT rolname FROM pg_roles limit 5;"
 	fi 
 }
 
@@ -75,6 +89,10 @@ case $1 in
 	"health")
 		health
 		docker ps -a	
+		exit 0
+		;;
+	"sql")
+		runsqlfile
 		exit 0
 		;;
 	*)
